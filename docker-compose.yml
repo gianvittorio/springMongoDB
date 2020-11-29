@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+
+  mongo1:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 9042:9042
+    volumes:
+    - ./mongo1-volume:/data/db
+
+  mongo2:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 9142:9042
+    volumes:
+      - ./mongo2-volume:/data/db
+
+  mongo3:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - 9242:9042
+    volumes:
+      - ./mongo3-volume:/data/db

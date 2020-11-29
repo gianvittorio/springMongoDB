@@ -1,0 +1,13 @@
+
+udemy:
+  mongodb:
+    replicaset:
+      name: docker-rs
+      username: admin
+      password: admin
+      primary: mongo1
+      port: 9042
+      database: projects
+      maxPoolSize: 600
+      authentication-database: admin
+      authMechanism: SCRAM-SHA-1

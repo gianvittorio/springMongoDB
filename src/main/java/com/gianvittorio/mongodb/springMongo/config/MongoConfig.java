@@ -5,10 +5,9 @@ import com.mongodb.client.MongoClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.example.udemyprojectexample.repository")
+//@EnableMongoRepositories(basePackageClasses = {ProjectRepository.class, TaskRepository.class})
 public class MongoConfig extends AbstractMongoClientConfiguration {
     @Value("${udemy.mongodb.replicaset.database}")
     private String database;

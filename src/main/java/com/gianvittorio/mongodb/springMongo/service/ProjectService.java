@@ -4,6 +4,9 @@ import com.gianvittorio.mongodb.springMongo.model.Project;
 import com.gianvittorio.mongodb.springMongo.model.Task;
 
 public interface ProjectService {
-    public void saveProject(Project p);
-    public void saveTask(Task t);
+    void saveProject(Project p);
+    void saveTask(Task t);
+    Project findProject(String id);
+    Task findTask(String id);
+    void deleteTask(String id);
 }

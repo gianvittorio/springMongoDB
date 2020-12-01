@@ -181,5 +181,23 @@ public class ProjectController {
     public ResponseEntity<List<ResultProjectTasks>> findAllProjectTasks() {
         return ResponseEntity.ok(projectService.findAllProjectTasks());
     }
+
+    @GetMapping("/findNameDescriptionForMatchingTerm")
+    public ResponseEntity<List<Project>> findNameDescriptionForMatchingTerm(@RequestParam String term) {
+        return ResponseEntity.ok(projectService.findNameDescriptionForMatchingTerm(term));
+    }
+
+    @PostMapping("/findNameDescriptionForMatchingAny")
+    public ResponseEntity<List<Project>> findNameDescriptionForMatchingAny(@RequestBody List<String> words) {
+        String[] wordsArray = words.stream()
+                .toArray(String[]::new);
+
+        return ResponseEntity.ok(projectService.findNameDescriptionForMatchingAny(wordsArray));
+    }
+
+    @GetMapping("/findNameDescriptionForMatchingPhrase")
+    public ResponseEntity<List<Project>> findNameDescriptionForMatchingPhrase(@RequestParam String phrase) {
+        return ResponseEntity.ok(projectService.findNameDescriptionForMatchingPhrase(phrase));
+    }
 }
 

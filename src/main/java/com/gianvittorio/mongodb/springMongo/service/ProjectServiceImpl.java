@@ -9,9 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+import org.springframework.data.mongodb.core.query.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -216,5 +214,38 @@ public class ProjectServiceImpl implements ProjectService {
 
         return mongoTemplate.aggregate(aggregation, "project", ResultProjectTasks.class)
                 .getMappedResults();
+    }
+
+    @Override
+    public List<Project> findNameDescriptionForMatchingTerm(String term) {
+        Query query = TextQuery.queryText(
+                TextCriteria.forDefaultLanguage()
+                        .matching(term))
+                .sortByScore()
+                .with(Sort.by(Sort.Direction.DESC, "score"));
+
+        return mongoOperations.find(query, Project.class);
+    }
+
+    @Override
+    public List<Project> findNameDescriptionForMatchingAny(String... words) {
+        Query query = TextQuery.queryText(
+                TextCriteria.forDefaultLanguage()
+                        .matchingAny(words))
+                .sortByScore()
+                .with(Sort.by(Sort.Direction.DESC, "score"));
+
+        return mongoOperations.find(query, Project.class);
+    }
+
+    @Override
+    public List<Project> findNameDescriptionForMatchingPhrase(String phrase) {
+        Query query = TextQuery.queryText(
+                TextCriteria.forDefaultLanguage()
+                        .matchingPhrase(phrase))
+                .sortByScore()
+                .with(Sort.by(Sort.Direction.DESC, "score"));
+
+        return mongoOperations.find(query, Project.class);
     }
 }

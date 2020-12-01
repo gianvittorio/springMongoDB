@@ -50,4 +50,10 @@ public interface ProjectService {
     List<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(Long cost);
 
     List<ResultProjectTasks> findAllProjectTasks();
+
+    List<Project> findNameDescriptionForMatchingTerm(String term);
+
+    List<Project> findNameDescriptionForMatchingAny(String... words);
+
+    List<Project> findNameDescriptionForMatchingPhrase(String phrase);
 }

@@ -2,19 +2,29 @@ package com.gianvittorio.mongodb.springMongo.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
 @Document(collection = "project")
+@CompoundIndex(def = "{ 'name' : 1, 'cost' : 1 }", name = "nameCostIndex")
 public class Project {
     @Id
     private String id;
 
+    @Indexed(name = "nameIndex", direction = IndexDirection.ASCENDING)
+    @TextIndexed(weight = 2)
     private String name;
+
     private String code;
+
     @Field("desc")
+    @TextIndexed(weight = 8)
     private String description;
     private String startDate;
     private String endDate;

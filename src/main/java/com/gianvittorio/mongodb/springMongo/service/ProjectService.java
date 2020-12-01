@@ -44,4 +44,10 @@ public interface ProjectService {
     void upsertCostWithCriteriaTemplate(String id, Long cost);
 
     void deleteWithCriteriaTemplate(String id);
+
+    Long findNoOfProjectsCostGreaterThan(Long cost);
+
+    List<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(Long cost);
+
+    List<ResultProjectTasks> findAllProjectTasks();
 }

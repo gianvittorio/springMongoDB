@@ -6,7 +6,9 @@ import com.gianvittorio.mongodb.springMongo.repository.ProjectRepository;
 import com.gianvittorio.mongodb.springMongo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -24,6 +26,9 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private MongoOperations mongoOperations;
 
     @Override
     public void saveProject(Project p) {
@@ -161,5 +166,55 @@ public class ProjectServiceImpl implements ProjectService {
                 .addCriteria(Criteria.where("id").is(id));
 
         mongoTemplate.remove(query, Project.class);
+    }
+
+    @Override
+    public Long findNoOfProjectsCostGreaterThan(Long cost) {
+        MatchOperation matchStage = Aggregation.match(new Criteria("cost").gt(cost));
+        CountOperation countStage = Aggregation.count().as("costly_projects");
+
+        Aggregation aggregation
+                = Aggregation.newAggregation(matchStage, countStage);
+        AggregationResults<ResultCount> output
+                = mongoTemplate.aggregate(aggregation, "project", ResultCount.class);
+
+        return output.getMappedResults().get(0).getCostly_projects();
+    }
+
+    @Override
+    public List<ResultByStartDateAndCost> findCostsGroupByStartDateForProjectsCostGreaterThan(Long cost) {
+
+        MatchOperation filterCost = Aggregation.match(new Criteria("cost").gt(cost));
+        GroupOperation groupByStartDateAndSumCost = Aggregation.group("startDate")
+                .sum("cost").as("total");
+
+        SortOperation sortByTotal = Aggregation.sort(Sort.by(Sort.Direction.DESC, "total"));
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                filterCost, groupByStartDateAndSumCost, sortByTotal);
+        AggregationResults<ResultByStartDateAndCost> result = mongoTemplate.aggregate(
+                aggregation, "project", ResultByStartDateAndCost.class);
+        return result.getMappedResults();
+    }
+
+    @Override
+    public List<ResultProjectTasks> findAllProjectTasks() {
+        LookupOperation lookupOperation = LookupOperation.newLookup()
+                .from("task")
+                .localField("_id")
+                .foreignField("pid")
+                .as("ProjectTasks");
+
+        UnwindOperation unwindOperation = Aggregation.unwind("ProjectTasks");
+
+        ProjectionOperation projectionOperation = Aggregation.project()
+                .andExpression("name").as("name")
+                .andExpression("ProjectTasks.name").as("taskName")
+                .andExpression("ProjectTasks.ownername").as("taskOwnerName");
+
+        Aggregation aggregation = Aggregation.newAggregation(lookupOperation, unwindOperation, projectionOperation);
+
+        return mongoTemplate.aggregate(aggregation, "project", ResultProjectTasks.class)
+                .getMappedResults();
     }
 }

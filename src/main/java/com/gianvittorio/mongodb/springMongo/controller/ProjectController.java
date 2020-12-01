@@ -3,6 +3,8 @@ package com.gianvittorio.mongodb.springMongo.controller;
 import com.gianvittorio.mongodb.springMongo.model.Project;
 import com.gianvittorio.mongodb.springMongo.model.Task;
 import com.gianvittorio.mongodb.springMongo.service.ProjectService;
+import com.gianvittorio.mongodb.springMongo.service.ResultByStartDateAndCost;
+import com.gianvittorio.mongodb.springMongo.service.ResultProjectTasks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -163,6 +165,21 @@ public class ProjectController {
     @DeleteMapping("/deleteWithCriteriaTemplate/{id}")
     public void deleteWithCriteriaTemplate(@PathVariable("id") String id) {
         projectService.deleteWithCriteriaTemplate(id);
+    }
+
+    @GetMapping("/findNoOfProjectsCostGreaterThan")
+    public ResponseEntity<Long> findNoOfProjectsCostGreaterThan(@RequestParam Long cost) {
+        return ResponseEntity.ok(projectService.findNoOfProjectsCostGreaterThan(cost));
+    }
+
+    @GetMapping("/findCostsGroupByStartDateForProjectsCostGreaterThan")
+    ResponseEntity<List<ResultByStartDateAndCost>> findCostsGroupByStartDateForProjectsCostGreaterThan(@RequestParam Long cost) {
+        return ResponseEntity.ok(projectService.findCostsGroupByStartDateForProjectsCostGreaterThan(cost));
+    }
+
+    @GetMapping("/findAllProjectTasks")
+    public ResponseEntity<List<ResultProjectTasks>> findAllProjectTasks() {
+        return ResponseEntity.ok(projectService.findAllProjectTasks());
     }
 }
 

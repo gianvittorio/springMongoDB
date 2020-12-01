@@ -8,9 +8,13 @@ import java.util.List;
 
 public interface ProjectService {
     void saveProject(Project p);
+
     void saveTask(Task t);
+
     Project findProject(String id);
+
     Task findTask(String id);
+
     void deleteTask(String id);
 
     List<Project> findByName(String name);
@@ -56,4 +60,12 @@ public interface ProjectService {
     List<Project> findNameDescriptionForMatchingAny(String... words);
 
     List<Project> findNameDescriptionForMatchingPhrase(String phrase);
+
+    void saveProjectAndTask(Project p, Task t);
+
+    void chunkAndSaveProject(Project p);
+
+    Project loadProjectFromGrid(String projectId);
+
+    void deleteProjectFromGrid(String ProjectId);
 }

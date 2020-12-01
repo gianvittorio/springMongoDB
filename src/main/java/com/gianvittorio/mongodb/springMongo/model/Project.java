@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.TextScore;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
 @CompoundIndex(def = "{ 'name' : 1, 'cost' : 1 }", name = "nameCostIndex")
 public class Project {
     @Id
-    private String id;
+    private String _id;
 
     @Indexed(name = "nameIndex", direction = IndexDirection.ASCENDING)
     @TextIndexed(weight = 2)
@@ -35,12 +36,15 @@ public class Project {
     @Version
     private Long version;
 
-    public String getId() {
-        return id;
+    @TextScore
+    private float score;
+
+    public String get_id() {
+        return _id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public String getName() {
@@ -105,5 +109,13 @@ public class Project {
 
     public void setVersion(Long version) {
         this.version = version;
+    }
+
+    public float getScore() {
+        return score;
+    }
+
+    public void setScore(float score) {
+        this.score = score;
     }
 }

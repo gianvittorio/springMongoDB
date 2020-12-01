@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -198,6 +199,69 @@ public class ProjectController {
     @GetMapping("/findNameDescriptionForMatchingPhrase")
     public ResponseEntity<List<Project>> findNameDescriptionForMatchingPhrase(@RequestParam String phrase) {
         return ResponseEntity.ok(projectService.findNameDescriptionForMatchingPhrase(phrase));
+    }
+
+    @PostMapping("/saveProjectAndTask")
+    public void saveProjectAndTask() {
+        Project project = newProject();
+
+        Task task = newTask();
+
+        projectService.saveProjectAndTask(project, task);
+    }
+
+    private static Project newProject() {
+        Project p = new Project();
+
+        p.set_id("4");
+        p.setCode("D");
+        p.setCountryList(Arrays.asList("UK", "India"));
+        p.setDescription("ProjectDescription");
+        p.setStartDate("2020-01-01");
+        p.setEndDate("2021-01-01");
+        p.setEstimatedCost(5000);
+        p.setName("ProjectD");
+
+        return p;
+    }
+
+    private static Task newTask() {
+        Task t = new Task();
+
+        t.setId("8");
+        t.setCost(3000);
+        t.setDescription("taskDescription");
+        t.setName("taskK");
+        t.setOwnername("Tom");
+        t.setProjectId("4");
+
+        return t;
+    }
+
+    @PostMapping("/chunkAndSaveProject")
+    public void chunkAndSaveProject() {
+        Project p = new Project();
+
+        p.set_id("5");
+        p.setCode("E");
+        p.setCountryList(Arrays.asList("UK", "India"));
+        p.setDescription("ProjectDescription");
+        p.setStartDate("2022-01-01");
+        p.setEndDate("2023-01-01");
+        p.setEstimatedCost(15000);
+        p.setName("ProjectE");
+
+        projectService.chunkAndSaveProject(p);
+    }
+
+    @GetMapping("/loadProjectFromGrid")
+    public ResponseEntity<Project> loadProjectFromGrid(@RequestParam("project_id") String projectId) {
+        return ResponseEntity.ok(projectService.loadProjectFromGrid(projectId));
+    }
+
+    @PostMapping("/deleteProjectFromGrid/{project_id}")
+    public void deleteProjectFromGrid(@PathVariable("project_id") String projectId) {
+        projectService.deleteProjectFromGrid(projectId);
     }
 }
 

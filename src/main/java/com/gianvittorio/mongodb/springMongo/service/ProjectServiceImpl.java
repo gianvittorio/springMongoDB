@@ -1,18 +1,29 @@
 package com.gianvittorio.mongodb.springMongo.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gianvittorio.mongodb.springMongo.model.Project;
 import com.gianvittorio.mongodb.springMongo.model.Task;
 import com.gianvittorio.mongodb.springMongo.repository.ProjectRepository;
 import com.gianvittorio.mongodb.springMongo.repository.TaskRepository;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.*;
+import org.springframework.data.mongodb.gridfs.GridFsOperations;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProjectServiceImpl implements ProjectService {
@@ -27,6 +38,12 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Autowired
     private MongoOperations mongoOperations;
+
+    @Autowired
+    private GridFsTemplate gridFsTemplate;
+
+    @Autowired
+    private GridFsOperations operations;
 
     @Override
     public void saveProject(Project p) {
@@ -247,5 +264,86 @@ public class ProjectServiceImpl implements ProjectService {
                 .with(Sort.by(Sort.Direction.DESC, "score"));
 
         return mongoOperations.find(query, Project.class);
+    }
+
+    @Override
+    @Transactional
+    public void saveProjectAndTask(Project p, Task t) {
+        taskRepository.save(t);
+        projectRepository.save(p);
+    }
+
+    @Override
+    public void chunkAndSaveProject(Project p) {
+        String s = serializeToJson(p);
+
+        InputStream targetStream = new ByteArrayInputStream(s.getBytes());
+
+        DBObject metaData = new BasicDBObject();
+
+        metaData.put("projectId", p.get_id());
+
+        gridFsTemplate.store(targetStream, p.get_id(), metaData);
+    }
+
+    @Override
+    public Project loadProjectFromGrid(String projectId) {
+        GridFSFile file = gridFsTemplate.findOne(
+                new Query().addCriteria(Criteria.where("metadata.projectId").is(projectId))
+                        .with(Sort.by(Sort.Direction.DESC, "uploadDate"))
+                        .limit(1)
+        );
+
+        Project p = null;
+
+        if (file != null) {
+            try {
+                InputStream in = operations.getResource(file).getInputStream();
+
+                String projectJson = new BufferedReader(
+                        new InputStreamReader(in, StandardCharsets.UTF_8)
+                )
+                        .lines()
+                        .collect(Collectors.joining("\n"));
+                p = deserialize(projectJson);
+            } catch (IOException e) {
+                throw new RuntimeException("Project retrieval error " + projectId);
+            }
+        }
+
+        return p;
+    }
+
+    @Override
+    public void deleteProjectFromGrid(String projectId) {
+        gridFsTemplate.delete(new Query(Criteria.where("metadata.ProjectId").is(projectId)));
+    }
+
+    private static String serializeToJson(Project p) {
+        String s = null;
+
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            s = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(p);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return s;
+    }
+
+    private Project deserialize(String json) {
+        Project p = null;
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+            p = objectMapper.readValue(json, Project.class);
+        } catch (Exception i) {
+            throw new RuntimeException(i);
+        }
+
+        return p;
     }
 }
